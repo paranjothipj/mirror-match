@@ -1,19 +1,19 @@
 # Content Match - Excel Column Comparison Tool
 
 ## Overview
-This tool compares content between two Excel files (sheet1.xlsx and sheet2.xlsx) on a word-by-word basis, using **sheet1 as the 100% baseline**. The comparison is performed by matching records using composite keys (Basepack + Account) and analyzing text content across multiple columns.
+This tool compares content between two Excel files (ApprovedFile.xlsx and DeployedFile.xlsx) on a word-by-word basis, using **ApprovedFile as the 100% baseline**. The comparison is performed by matching records using composite keys (Basepack + Account) and analyzing text content across multiple columns.
 
 ## How the Matching Logic Works
 
 ### 1. File Structure
-- **sheet1.xlsx** - Base file (reference, 100%)
-- **sheet2.xlsx** - Comparison file
+- **ApprovedFile.xlsx** - Base file (reference, 100%)
+- **DeployedFile.xlsx** - Comparison file
 - Both files must contain: `Basepack`, `Account`, and comparison columns (Title, Feature bullets, Product description)
 
 ### 2. Composite Key Matching
 Records are matched between files using: `Basepack + Account`
 - Only matching records are compared
-- Records not found in sheet2 are flagged as "NOT FOUND in Sheet2"
+- Records not found in DeployedFile are flagged as "NOT FOUND in Sheet2"
 
 ### 3. Word-by-Word Matching Algorithm
 
@@ -47,35 +47,35 @@ The matching is based on counting individual words, not character similarity.
 
 **Step 3: Calculate Match Percentage**
 ```
-matched_words = sum of minimum counts for each word present in sheet1
-base_word_count = total words in sheet1 column
+matched_words = sum of minimum counts for each word present in ApprovedFile
+base_word_count = total words in ApprovedFile column
 
 match_percentage = (matched_words / base_word_count) × 100%
 ```
 
 **Step 4: Identify Extra Content**
-- If sheet2 has ALL words from sheet1 (100% match)
-- AND sheet2 has additional words beyond sheet1
+- If DeployedFile has ALL words from ApprovedFile (100% match)
+- AND DeployedFile has additional words beyond ApprovedFile
 - Then mark that column name in "Columns with extra content"
 
 #### Example
 
 **Sheet1 - Title Column:**
 ```
-"Premium Wireless Headphones Black"
-Words: [premium, wireless, headphones, black]
+"Sunlight Colour Guard Detergent"
+Words: [Sunlight, Colour, Guard, Detergent]
 Word count: 4 (this is 100%)
 ```
 
 **Sheet2 - Title Column:**
 ```
-"Premium Wireless Headphones Black Bluetooth"
-Words: [premium, wireless, headphones, black, bluetooth]
+"Sunlight Colour Guard Detergent Powder"
+Words: [Sunlight, Colour, Guard, Detergent, Powder]
 Word count: 5
 ```
 
 **Result:**
-- Matched words: 4 (all sheet1 words found)
+- Matched words: 4 (all ApprovedFile words found)
 - Match percentage: (4 / 4) × 100 = **100%**
 - Has extra: Yes (bluetooth)
 - Column marked in: **"Columns with extra content: Title"**
@@ -94,7 +94,7 @@ The tool generates `comparison_result.xlsx` with the following columns:
 #### Overall Metrics
 - **MatchPercentWordLevel** - Overall match % across all columns
 - **Feature bullet overall** - Match % for Feature bullet 1-6 combined
-- **Columns with extra content** - Column names where sheet2 has 100% match + extra words
+- **Columns with extra content** - Column names where DeployedFile has 100% match + extra words
 
 #### Per-Column Metrics
 For each column (Title, Feature bullet 1-6, Product description):
@@ -103,20 +103,20 @@ For each column (Title, Feature bullet 1-6, Product description):
 ### 5. Match Percentage Rules
 
 #### 100% Match
-- All words from sheet1 are found in sheet2 (same frequency)
+- All words from ApprovedFile are found in DeployedFile (same frequency)
 - Sheet2 may have additional words (marked in "Columns with extra content")
 
 #### Partial Match (0-99%)
-- Some words from sheet1 are missing in sheet2
+- Some words from ApprovedFile are missing in DeployedFile
 - Or word frequencies don't match
 
 #### 0% Match
-- None of the words from sheet1 are found in sheet2
+- None of the words from ApprovedFile are found in DeployedFile
 
 #### Special Cases
 - Both empty: **100%** (considered identical)
-- Sheet1 empty, sheet2 has content: **0%**
-- Sheet1 has content, sheet2 empty: **0%**
+- Sheet1 empty, DeployedFile has content: **0%**
+- Sheet1 has content, DeployedFile empty: **0%**
 
 ## Word Frequency Matching
 
@@ -135,7 +135,7 @@ Matched:
 - quality: min(1, 1) = 1
 Total matched: 2
 
-Base count: 3 (sheet1 total words)
+Base count: 3 (ApprovedFile total words)
 Match %: (2 / 3) × 100 = 66.67%
 ```
 
@@ -148,7 +148,7 @@ python content-match.py
 **Prerequisites:**
 - Python 3.x
 - pandas library (`pip install pandas openpyxl`)
-- sheet1.xlsx and sheet2.xlsx in the same directory
+- ApprovedFile.xlsx and DeployedFile.xlsx in the same directory
 
 **Output:**
 - `comparison_result.xlsx` - Detailed comparison report
@@ -156,10 +156,10 @@ python content-match.py
 ## Important Notes
 
 1. **Sheet1 is Always the Baseline** - Match percentages never exceed 100%
-2. **Word Order Doesn't Matter** - "black headphones" = "headphones black"
-3. **Case Insensitive** - "Premium" = "premium"
-4. **Punctuation Ignored** - "high-quality" = "high quality"
-5. **Duplicate Words Count** - "best best product" requires "best" twice for 100%
+2. **Word Order Doesn't Matter** - "Detergent Powder" = "Powder Detergent"
+3. **Case Insensitive** - "Detergent" = "detergent"
+4. **Punctuation Ignored** - "Detergent-Powder" = "Detergent Powder"
+5. **Duplicate Words Count** - "detergent powder powder" requires "powder" twice for 100%
 6. **Extra Content Tracking** - Only shows columns with 100% match + extra words
 
 ## Use Cases
