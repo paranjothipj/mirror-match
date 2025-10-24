@@ -77,8 +77,54 @@ Word count: 5
 **Result:**
 - Matched words: 4 (all ApprovedFile words found)
 - Match percentage: (4 / 4) × 100 = **100%**
-- Has extra: Yes (bluetooth)
+- Has extra: Yes (Powder)
 - Column marked in: **"Columns with extra content: Title"**
+
+#### Example 2: Special Characters & Punctuation Handling
+
+**ApprovedFile - Title Column:**
+```
+"Lakme 9 to 5 Flawless Matte Complexion Compact|| Almond|| 8 g"
+```
+
+**After Normalization:**
+```
+"lakme 9 to 5 flawless matte complexion compact almond 8 g"
+Words: [lakme, 9, to, 5, flawless, matte, complexion, compact, almond, 8, g]
+Word count: 11 (this is 100%)
+```
+
+**DeployedFile - Title Column:**
+```
+"Lakme 9To5 Flawless Matte Complexion Compact (Almond)"
+```
+
+**After Normalization:**
+```
+"lakme 9to5 flawless matte complexion compact almond"
+Words: [lakme, 9to5, flawless, matte, complexion, compact, almond]
+Word count: 7
+```
+
+**Matching Process:**
+- ✓ lakme (matched)
+- ✗ 9 (not found - DeployedFile has "9to5" as single word)
+- ✗ to (not found)
+- ✗ 5 (not found - merged with 9 in DeployedFile)
+- ✓ flawless (matched)
+- ✓ matte (matched)
+- ✓ complexion (matched)
+- ✓ compact (matched)
+- ✓ almond (matched)
+- ✗ 8 (not found)
+- ✗ g (not found)
+
+**Result:**
+- Matched words: 6 out of 11
+- Match percentage: (6 / 11) × 100 = **54.55%**
+- Has extra: No (missing words, not 100% match)
+- Column marked in: *(not marked, less than 100%)*
+- Remark: "Title" (mismatch detected)
 
 ### 4. Comparison Outputs
 
