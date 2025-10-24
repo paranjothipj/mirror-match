@@ -174,12 +174,6 @@ Word count: 7
 - Column marked in: *(not marked, less than 100%)*
 - Remark: "Title" (mismatch detected)
 
-**Key Observations:**
-- "Super Black" vs "Bold Black" - different variant names cause mismatch
-- Missing weight "0.35 g" reduces match percentage
-- `||` and `()` punctuation removed during normalization
-- Decimal "0.35" kept as single word token
-
 ### 4. Comparison Outputs
 
 The tool generates `comparison_result.xlsx` with the following columns:
