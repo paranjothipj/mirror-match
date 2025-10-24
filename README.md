@@ -13,12 +13,12 @@ This tool compares content between two Excel files (ApprovedFile.xlsx and Deploy
 ### 2. Composite Key Matching
 Records are matched between files using: `Basepack + Account`
 - Only matching records are compared
-- Records not found in DeployedFile are flagged as "NOT FOUND in Sheet2"
+- Records not found in DeployedFile are flagged as "NOT FOUND in DeployedFile"
 
 ### 3. Word-by-Word Matching Algorithm
 
 #### Core Principle
-**Sheet1 column word count = 100%**
+**ApprovedFile column word count = 100%**
 
 The matching is based on counting individual words, not character similarity.
 
@@ -60,14 +60,14 @@ match_percentage = (matched_words / base_word_count) × 100%
 
 #### Example
 
-**Sheet1 - Title Column:**
+**ApprovedFile - Title Column:**
 ```
 "Sunlight Colour Guard Detergent"
 Words: [Sunlight, Colour, Guard, Detergent]
 Word count: 4 (this is 100%)
 ```
 
-**Sheet2 - Title Column:**
+**DeployedFile - Title Column:**
 ```
 "Sunlight Colour Guard Detergent Powder"
 Words: [Sunlight, Colour, Guard, Detergent, Powder]
@@ -104,7 +104,7 @@ For each column (Title, Feature bullet 1-6, Product description):
 
 #### 100% Match
 - All words from ApprovedFile are found in DeployedFile (same frequency)
-- Sheet2 may have additional words (marked in "Columns with extra content")
+- DeployedFile may have additional words (marked in "Columns with extra content")
 
 #### Partial Match (0-99%)
 - Some words from ApprovedFile are missing in DeployedFile
@@ -115,8 +115,8 @@ For each column (Title, Feature bullet 1-6, Product description):
 
 #### Special Cases
 - Both empty: **100%** (considered identical)
-- Sheet1 empty, DeployedFile has content: **0%**
-- Sheet1 has content, DeployedFile empty: **0%**
+- ApprovedFile empty, DeployedFile has content: **0%**
+- ApprovedFile has content, DeployedFile empty: **0%**
 
 ## Word Frequency Matching
 
@@ -124,10 +124,10 @@ The tool uses `Counter` to match word frequencies:
 
 **Example:**
 ```
-Sheet1: "premium premium quality"
+ApprovedFile: "premium premium quality"
 Words: {premium: 2, quality: 1}
 
-Sheet2: "premium quality product"
+DeployedFile: "premium quality product"
 Words: {premium: 1, quality: 1, product: 1}
 
 Matched:
@@ -155,7 +155,7 @@ python content-match.py
 
 ## Important Notes
 
-1. **Sheet1 is Always the Baseline** - Match percentages never exceed 100%
+1. **ApprovedFile is Always the Baseline** - Match percentages never exceed 100%
 2. **Word Order Doesn't Matter** - "Detergent Powder" = "Powder Detergent"
 3. **Case Insensitive** - "Detergent" = "detergent"
 4. **Punctuation Ignored** - "Detergent-Powder" = "Detergent Powder"
