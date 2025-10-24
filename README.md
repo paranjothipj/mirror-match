@@ -42,7 +42,9 @@ The matching is based on counting individual words, not character similarity.
 - **Trim leading/trailing quotes and whitespace**
 
 **Step 2: Extract Words**
-- Use regex `\w+` to extract all words (alphanumeric sequences)
+- Use regex `\d+\.\d+|\w+` to extract:
+  - Decimal numbers (e.g., "0.35", "12.5") as single tokens
+  - Alphanumeric sequences (words, numbers)
 - Create word frequency counters for both columns
 
 **Step 3: Calculate Match Percentage**
@@ -93,6 +95,7 @@ Word count: 5
 Words: [lakme, 9, to, 5, flawless, matte, complexion, compact, almond, 8, g]
 Word count: 11 (this is 100%)
 ```
+*Note: "9 to 5" stays as separate words [9, to, 5] because there's no decimal point*
 
 **DeployedFile - Title Column:**
 ```
@@ -125,6 +128,57 @@ Word count: 7
 - Has extra: No (missing words, not 100% match)
 - Column marked in: *(not marked, less than 100%)*
 - Remark: "Title" (mismatch detected)
+
+#### Example 3: Product Variant Mismatch
+
+**ApprovedFile - Title Column:**
+```
+"Elle 18 Eye Drama Kajal|| Super Black|| 0.35 g"
+```
+
+**After Normalization:**
+```
+"elle 18 eye drama kajal super black 0.35 g"
+Words: [elle, 18, eye, drama, kajal, super, black, 0.35, g]
+Word count: 9 (this is 100%)
+```
+*Note: "0.35" is kept as one word (decimal number)*
+
+**DeployedFile - Title Column:**
+```
+"Elle 18 Eye Drama Kajal (Bold Black)"
+```
+
+**After Normalization:**
+```
+"elle 18 eye drama kajal bold black"
+Words: [elle, 18, eye, drama, kajal, bold, black]
+Word count: 7
+```
+
+**Matching Process:**
+- ✓ elle (matched)
+- ✓ 18 (matched)
+- ✓ eye (matched)
+- ✓ drama (matched)
+- ✓ kajal (matched)
+- ✗ super (not found - DeployedFile has "bold" instead)
+- ✓ black (matched)
+- ✗ 0.35 (not found)
+- ✗ g (not found)
+
+**Result:**
+- Matched words: 6 out of 9
+- Match percentage: (6 / 9) × 100 = **66.67%**
+- Has extra: No (missing words, not 100% match)
+- Column marked in: *(not marked, less than 100%)*
+- Remark: "Title" (mismatch detected)
+
+**Key Observations:**
+- "Super Black" vs "Bold Black" - different variant names cause mismatch
+- Missing weight "0.35 g" reduces match percentage
+- `||` and `()` punctuation removed during normalization
+- Decimal "0.35" kept as single word token
 
 ### 4. Comparison Outputs
 
@@ -205,8 +259,9 @@ python content-match.py
 2. **Word Order Doesn't Matter** - "Detergent Powder" = "Powder Detergent"
 3. **Case Insensitive** - "Detergent" = "detergent"
 4. **Punctuation Ignored** - "Detergent-Powder" = "Detergent Powder"
-5. **Duplicate Words Count** - "detergent powder powder" requires "powder" twice for 100%
-6. **Extra Content Tracking** - Only shows columns with 100% match + extra words
+5. **Decimals Preserved** - "0.35" is one word (not split into "0" and "35")
+6. **Duplicate Words Count** - "detergent powder powder" requires "powder" twice for 100%
+7. **Extra Content Tracking** - Only shows columns with 100% match + extra words
 
 ## Use Cases
 
