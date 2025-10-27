@@ -75,8 +75,12 @@ for composite_key in df1.index:
             s = (s.replace("\u2018", "'").replace("\u2019", "'")
                    .replace("\u201C", '"').replace("\u201D", '"'))
             s = re.sub(r"[\s\u00A0\u1680\u180E\u2000-\u200A\u202F\u205F\u3000]+", " ", s)
-            s = re.sub(r"\s+([,.;:!?])", r"\1", s)
-            s = re.sub(r"([,.;:!?])\s*", r"\1 ", s)
+            # Normalize punctuation spacing, but preserve decimal points
+            s = re.sub(r"\s+([,;:?!])", r"\1", s)  # Remove space before punctuation (except period)
+            s = re.sub(r"([,;:?!])\s*", r"\1 ", s)  # Add space after punctuation (except period)
+            # Handle periods: only add space if not part of decimal number (e.g., keep 0.35 intact)
+            s = re.sub(r"\.(?=\D|\s|$)", ". ", s)  # Add space after period if not followed by digit
+            s = re.sub(r"\s+", " ", s)  # Clean up multiple spaces
             s = s.strip().strip('\"\'')
             s = s.lower()
             return s
@@ -84,8 +88,9 @@ for composite_key in df1.index:
         def word_match_percent_and_has_extra(a: str, b: str) -> tuple[float, bool]:
             # a = file1 (base, 100%), b = file2 (comparison)
             # Return percentage (capped at 100%) and whether file2 has extra words
-            w1 = re.findall(r"\w+", a.lower())
-            w2 = re.findall(r"\w+", b.lower())
+            # Extract words including decimals (e.g., 0.35)
+            w1 = re.findall(r"\d+\.\d+|\w+", a.lower())
+            w2 = re.findall(r"\d+\.\d+|\w+", b.lower())
 
             if not w1 and not w2:
                 return 100.0, False
@@ -120,8 +125,8 @@ for composite_key in df1.index:
         
         # Overall word-level match percentage (all attributes)
         # file1 as base (100%), capped at 100%
-        words1 = re.findall(r"\w+", " ".join(norm1[col] for col in columns_to_compare).lower())
-        words2 = re.findall(r"\w+", " ".join(norm2[col] for col in columns_to_compare).lower())
+        words1 = re.findall(r"\d+\.\d+|\w+", " ".join(norm1[col] for col in columns_to_compare).lower())
+        words2 = re.findall(r"\d+\.\d+|\w+", " ".join(norm2[col] for col in columns_to_compare).lower())
 
         if not words1 and not words2:
             overall_percent = 100.0
@@ -137,8 +142,8 @@ for composite_key in df1.index:
         bullet_cols = [f"Feature bullet {i}" for i in range(1, 7)]
         fb_text1 = " ".join(norm1[c] for c in bullet_cols)
         fb_text2 = " ".join(norm2[c] for c in bullet_cols)
-        fb_tokens1 = re.findall(r"\w+", fb_text1.lower())
-        fb_tokens2 = re.findall(r"\w+", fb_text2.lower())
+        fb_tokens1 = re.findall(r"\d+\.\d+|\w+", fb_text1.lower())
+        fb_tokens2 = re.findall(r"\d+\.\d+|\w+", fb_text2.lower())
 
         if not fb_tokens1 and not fb_tokens2:
             fb_overall_percent = 100.0
